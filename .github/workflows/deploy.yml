@@ -23,6 +23,14 @@ jobs:
       - name: Determine environment from branch
         id: determine-env
         run: |
+          if [ -z "${{ vars.REGION }}" ]; then
+            echo "Error: GitHub variable REGION is not set."
+            exit 1
+          fi
+          if [ -z "${{ vars.GCP_PROJECT_ID }}" ]; then
+            echo "Error: GitHub variable GCP_PROJECT_ID is not set."
+            exit 1
+          fi
           BRANCH="${{ github.ref_name }}"
           case "$BRANCH" in
             develop)
@@ -62,7 +70,8 @@ jobs:
 
       - name: Configure Docker for Artifact Registry
         run: |
-          gcloud auth configure-docker ${{ vars.REGION }}-docker.pkg.dev
+          REGION="${{ vars.REGION || 'us-central1' }}"
+          gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
 
       - name: Build Docker image
         run: |
