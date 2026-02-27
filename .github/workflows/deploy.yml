@@ -1,0 +1,47 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - develop
+      - stage
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    uses: Ponta-Development/studio-ci/.github/workflows/deploy-django.yml@main
+    with:
+      service_name: expense-tracker
+      gcp_project_id: ${{ vars.GCP_PROJECT_ID }}
+      region: ${{ vars.REGION }}
+      ar_repo: ${{ github.ref_name == 'main' && 'studio-gcr-prod' || github.ref_name == 'stage' && 'studio-gcr-stage' || 'studio-gcr-dev' }}
+      runtime_sa: ${{ vars.RUNTIME_SA }}
+      cloudsql_instance: involuted-bird-416608:us-central1:platform-develop
+    secrets:
+      gcp_sa_key: ${{ secrets.GCP_SA_KEY }}
+      env_vars: >-
+        {
+          "DJANGO_SETTINGS_MODULE": "${{ github.ref_name == 'main' && 'config.settings.prod' || github.ref_name == 'stage' && 'config.settings.stage' || 'config.settings.develop' }}",
+          "DJANGO_ALLOWED_HOSTS": "${{ github.ref_name == 'main' && vars.DJANGO_ALLOWED_HOSTS_PROD || github.ref_name == 'stage' && vars.DJANGO_ALLOWED_HOSTS_STAGE || vars.DJANGO_ALLOWED_HOSTS_DEVELOP }}",
+          "DB_ENGINE_TYPE": "pg",
+          "DB_ENGINE": "django.db.backends.postgresql_psycopg2",
+          "DB_NAME": "test_db",
+          "DB_USER": "postgres",
+          "DB_PASSWORD": "4753uRglf9ylGDOvBhD9",
+          "DB_HOST": "/cloudsql/involuted-bird-416608:us-central1:platform-develop",
+          "DB_PORT": "",
+          "CORS_ALLOW_ALL_ORIGINS": "False",
+          "CORS_ALLOWED_ORIGINS": "${{ github.ref_name == 'main' && vars.CORS_ALLOWED_ORIGINS_PROD || github.ref_name == 'stage' && vars.CORS_ALLOWED_ORIGINS_STAGE || vars.CORS_ALLOWED_ORIGINS_DEVELOP }}",
+          "CORS_ALLOW_CREDENTIALS": "False",
+          "JWT_ALGORITHM": "${{ vars.JWT_ALGORITHM }}",
+          "JWT_ACCESS_TOKEN_LIFETIME_MINUTES": "${{ vars.JWT_ACCESS_TOKEN_LIFETIME_MINUTES }}",
+          "JWT_REFRESH_TOKEN_LIFETIME_DAYS": "${{ vars.JWT_REFRESH_TOKEN_LIFETIME_DAYS }}",
+          "JWT_ROTATE_REFRESH_TOKENS": "${{ vars.JWT_ROTATE_REFRESH_TOKENS }}",
+          "JWT_BLACKLIST_AFTER_ROTATION": "${{ vars.JWT_BLACKLIST_AFTER_ROTATION }}",
+          "JWT_SIGNING_KEY": "${{ secrets.JWT_SIGNING_KEY }}",
+          "SECRET_KEY": "${{ secrets.SECRET_KEY }}"
+        }
