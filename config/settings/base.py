@@ -44,6 +44,7 @@ def env_bool_with_blank_default(name: str, default: bool) -> bool:
 SERVICE_NAME = env("SERVICE_NAME", default="expense-tracker-backend")
 SERVICE_VERSION = env("SERVICE_VERSION", default="1.0.0")
 ENVIRONMENT = env("ENVIRONMENT", default="develop")
+PUBLIC_SHARE_BASE_URL = env("PUBLIC_SHARE_BASE_URL", default="http://localhost:5000")
 
 SECRET_KEY = env_str_with_blank_default(
     "SECRET_KEY",
@@ -51,6 +52,7 @@ SECRET_KEY = env_str_with_blank_default(
         "DJANGO_SECRET_KEY", "django-insecure-change-me-in-production"
     ),
 )
+SHARE_TOKEN_PEPPER = env_str_with_blank_default("SHARE_TOKEN_PEPPER", SECRET_KEY)
 DEBUG = env("DEBUG")
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["*"])
 DJANGO_PORT = env.int("DJANGO_PORT", default=8000)
@@ -161,6 +163,12 @@ REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
     ],
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.ScopedRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "public_payables": env("PUBLIC_PAYABLES_THROTTLE_RATE", default="60/min"),
+    },
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 

@@ -123,6 +123,9 @@ jobs:
               "JWT_REFRESH_TOKEN_LIFETIME_DAYS": "${{ vars.JWT_REFRESH_TOKEN_LIFETIME_DAYS || '14' }}",
               "JWT_ROTATE_REFRESH_TOKENS": "${{ vars.JWT_ROTATE_REFRESH_TOKENS || 'True' }}",
               "JWT_BLACKLIST_AFTER_ROTATION": "${{ vars.JWT_BLACKLIST_AFTER_ROTATION || 'True' }}",
+              "PUBLIC_SHARE_BASE_URL": "${{ vars.PUBLIC_SHARE_BASE_URL || 'https://expense-tracker-254338401493.us-central1.run.app' }}",
+              "PUBLIC_PAYABLES_THROTTLE_RATE": "${{ vars.PUBLIC_PAYABLES_THROTTLE_RATE || '60/min' }}",
+              "SHARE_TOKEN_PEPPER": "${{ secrets.SHARE_TOKEN_PEPPER }}",
               "JWT_SIGNING_KEY": "${{ secrets.JWT_SIGNING_KEY }}",
               "SECRET_KEY": "${{ secrets.SECRET_KEY }}"
             }
@@ -189,6 +192,9 @@ jobs:
               "JWT_REFRESH_TOKEN_LIFETIME_DAYS": "${{ vars.JWT_REFRESH_TOKEN_LIFETIME_DAYS || '14' }}",
               "JWT_ROTATE_REFRESH_TOKENS": "${{ vars.JWT_ROTATE_REFRESH_TOKENS || 'True' }}",
               "JWT_BLACKLIST_AFTER_ROTATION": "${{ vars.JWT_BLACKLIST_AFTER_ROTATION || 'True' }}",
+              "PUBLIC_SHARE_BASE_URL": "${{ vars.PUBLIC_SHARE_BASE_URL || 'https://expense-tracker-254338401493.us-central1.run.app' }}",
+              "PUBLIC_PAYABLES_THROTTLE_RATE": "${{ vars.PUBLIC_PAYABLES_THROTTLE_RATE || '60/min' }}",
+              "SHARE_TOKEN_PEPPER": "${{ secrets.SHARE_TOKEN_PEPPER }}",
               "JWT_SIGNING_KEY": "${{ secrets.JWT_SIGNING_KEY }}",
               "SECRET_KEY": "${{ secrets.SECRET_KEY }}"
             }

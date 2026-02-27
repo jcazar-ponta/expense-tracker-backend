@@ -1,8 +1,23 @@
+from datetime import timedelta
+from uuid import UUID
+
 from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers
 
-from .models import ActionType, Allocation, AppSettings, EntityType, ItemExpense, LedgerEvent, Payment, Person
+from .models import (
+    ActionType,
+    Allocation,
+    AppSettings,
+    EntityType,
+    ItemExpense,
+    LedgerEvent,
+    Payment,
+    Person,
+    PublicShareLink,
+    ShareScopeType,
+)
+from .services.share_tokens import generate_share_token, hash_share_token
 from .utils import to_json_safe
 
 
@@ -186,3 +201,117 @@ class AppSettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = AppSettings
         fields = ("defaultCurrency", "roundingStrategy")
+
+
+class PublicShareLinkSerializer(OwnedModelSerializer):
+    scopeType = serializers.CharField(source="scope_type")
+    scopePayload = serializers.JSONField(source="scope_payload")
+    expiresAt = serializers.DateTimeField(source="expires_at", allow_null=True)
+    revokedAt = serializers.DateTimeField(source="revoked_at", allow_null=True)
+    lastAccessedAt = serializers.DateTimeField(source="last_accessed_at", allow_null=True)
+    accessCount = serializers.IntegerField(source="access_count")
+
+    class Meta:
+        model = PublicShareLink
+        fields = (
+            "id",
+            "scopeType",
+            "scopePayload",
+            "permissions",
+            "expiresAt",
+            "revokedAt",
+            "lastAccessedAt",
+            "accessCount",
+            "createdAt",
+            "updatedAt",
+        )
+
+
+class PublicShareLinkCreateSerializer(serializers.Serializer):
+    scopeType = serializers.ChoiceField(choices=ShareScopeType.choices)
+    scopePayload = serializers.JSONField()
+    expiresInDays = serializers.IntegerField(required=False, min_value=1, allow_null=True, max_value=3650)
+    includeBreakdown = serializers.BooleanField(required=False, default=True)
+
+    def _validate_month(self, value, field_name):
+        if not isinstance(value, str):
+            raise serializers.ValidationError({field_name: "Must be a string in YYYY-MM format."})
+        parts = value.split("-")
+        if len(parts) != 2:
+            raise serializers.ValidationError({field_name: "Must be in YYYY-MM format."})
+        year, month = parts
+        if len(year) != 4 or len(month) != 2 or not year.isdigit() or not month.isdigit():
+            raise serializers.ValidationError({field_name: "Must be in YYYY-MM format."})
+        month_int = int(month)
+        if month_int < 1 or month_int > 12:
+            raise serializers.ValidationError({field_name: "Month must be 01-12."})
+        return value
+
+    def _validate_person(self, person_id):
+        request = self.context["request"]
+        try:
+            UUID(str(person_id))
+        except (TypeError, ValueError):
+            raise serializers.ValidationError({"personId": "Invalid UUID."})
+        if not Person.objects.filter(id=person_id, owner=request.user).exists():
+            raise serializers.ValidationError({"personId": "Must reference one of your people."})
+
+    def validate(self, attrs):
+        scope_type = attrs["scopeType"]
+        payload = attrs["scopePayload"] if isinstance(attrs["scopePayload"], dict) else None
+        if payload is None:
+            raise serializers.ValidationError({"scopePayload": "Must be an object."})
+
+        if scope_type == ShareScopeType.MONTH:
+            month = payload.get("month")
+            self._validate_month(month, "month")
+        elif scope_type == ShareScopeType.RANGE:
+            start = self._validate_month(payload.get("start"), "start")
+            end = self._validate_month(payload.get("end"), "end")
+            if start > end:
+                raise serializers.ValidationError({"scopePayload": "start must be <= end."})
+        elif scope_type == ShareScopeType.PERSON_MONTH:
+            person_id = payload.get("personId")
+            month = payload.get("month")
+            if not person_id:
+                raise serializers.ValidationError({"personId": "This field is required."})
+            self._validate_person(person_id)
+            self._validate_month(month, "month")
+        elif scope_type == ShareScopeType.PERSON_RANGE:
+            person_id = payload.get("personId")
+            if not person_id:
+                raise serializers.ValidationError({"personId": "This field is required."})
+            self._validate_person(person_id)
+            start = self._validate_month(payload.get("start"), "start")
+            end = self._validate_month(payload.get("end"), "end")
+            if start > end:
+                raise serializers.ValidationError({"scopePayload": "start must be <= end."})
+        else:
+            raise serializers.ValidationError({"scopeType": "Unsupported scope type."})
+        return attrs
+
+    def create(self, validated_data):
+        request = self.context["request"]
+        expires_in_days = validated_data.get("expiresInDays")
+        expires_at = None
+        if expires_in_days:
+            expires_at = timezone.now() + timedelta(days=expires_in_days)
+
+        raw_token = generate_share_token()
+        token_hash = hash_share_token(raw_token)
+
+        share = PublicShareLink.objects.create(
+            owner=request.user,
+            token_hash=token_hash,
+            scope_type=validated_data["scopeType"],
+            scope_payload=validated_data["scopePayload"],
+            permissions={"viewOnly": True, "includeBreakdown": validated_data.get("includeBreakdown", True)},
+            expires_at=expires_at,
+        )
+        share._raw_token = raw_token
+        return share
+
+
+class PublicShareLinkUpdateSerializer(serializers.Serializer):
+    expiresInDays = serializers.IntegerField(required=False, min_value=1, allow_null=True, max_value=3650)
+    includeBreakdown = serializers.BooleanField(required=False)

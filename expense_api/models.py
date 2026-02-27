@@ -39,6 +39,13 @@ class ActionType(models.TextChoices):
     EXPORT = "EXPORT", "EXPORT"
 
 
+class ShareScopeType(models.TextChoices):
+    MONTH = "MONTH", "MONTH"
+    RANGE = "RANGE", "RANGE"
+    PERSON_MONTH = "PERSON_MONTH", "PERSON_MONTH"
+    PERSON_RANGE = "PERSON_RANGE", "PERSON_RANGE"
+
+
 class RoundingStrategy(models.TextChoices):
     ROUND_TO_CENT = "ROUND_TO_CENT", "ROUND_TO_CENT"
     DISTRIBUTE_REMAINDER = "DISTRIBUTE_REMAINDER", "DISTRIBUTE_REMAINDER"
@@ -128,3 +135,18 @@ class AppSettings(models.Model):
         choices=RoundingStrategy.choices,
         default=RoundingStrategy.DISTRIBUTE_REMAINDER,
     )
+
+
+class PublicShareLink(BaseOwnedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    token_hash = models.CharField(max_length=64, unique=True, db_index=True)
+    scope_type = models.CharField(max_length=20, choices=ShareScopeType.choices)
+    scope_payload = models.JSONField(default=dict)
+    permissions = models.JSONField(default=dict)
+    expires_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    revoked_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    last_accessed_at = models.DateTimeField(null=True, blank=True)
+    access_count = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["-created_at"]

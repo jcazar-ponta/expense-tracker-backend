@@ -52,6 +52,9 @@ docker run --rm -p 8080:8080 --env-file .env expense-tracker-backend
 - `GET|PATCH|DELETE /api/v1/payments/{id}/`
 - `GET|POST /api/v1/ledger/?entityType=...&entityId=...`
 - `GET|PATCH /api/v1/settings/me/`
+- `GET|POST /api/v1/shares/`
+- `PATCH|DELETE /api/v1/shares/{id}/`
+- `GET /api/v1/public/payables/{token}/` (no auth)
 - `GET /api/v1/health/`
 
 ## Frontend integration
@@ -74,3 +77,8 @@ python manage.py migrate
 Set these GitHub repository variables/secrets for `develop`, `stage`, and `main` deploys:
 - Variables: `CLOUDSQL_INSTANCE_*`, `DB_NAME_*`, `DB_USER_*`, `DB_PORT_*`
 - Secrets: `DB_PASSWORD_*`, `SECRET_KEY`, `JWT_SIGNING_KEY`, `GCP_SA_KEY`
+
+## Public share link env vars
+- `PUBLIC_SHARE_BASE_URL` (default: `http://localhost:5000`)
+- `SHARE_TOKEN_PEPPER` (default: `SECRET_KEY`, recommended to set explicitly)
+- `PUBLIC_PAYABLES_THROTTLE_RATE` (default: `60/min`)
