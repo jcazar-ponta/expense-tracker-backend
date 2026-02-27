@@ -12,9 +12,69 @@ permissions:
   contents: read
 
 jobs:
-  ci:
-    uses: Ponta-Development/studio-ci/.github/workflows/ci-django.yml@main
-    with:
-      service_name: expense-tracker
-      django_settings_module: config.settings
-    secrets: inherit
+  lint:
+    name: Lint Python Code
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 black isort
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+
+      - name: Run Black (code formatter check)
+        run: black --check .
+        continue-on-error: true
+
+      - name: Run isort (import sorting check)
+        run: isort --check-only .
+        continue-on-error: true
+
+      - name: Run Flake8 (linter)
+        run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+          pip install pytest pytest-django pytest-cov
+
+      - name: Run Django Tests
+        run: |
+          if [ -f manage.py ]; then
+            python manage.py test --noinput
+          elif [ -f pytest.ini ] || [ -f setup.cfg ] || [ -f pyproject.toml ]; then
+            pytest
+          else
+            echo "No test configuration found. Skipping tests."
+          fi
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings
+          DATABASE_URL: sqlite:///db.sqlite3
+          SECRET_KEY: django-insecure-build-time-key-for-running-checks-only
