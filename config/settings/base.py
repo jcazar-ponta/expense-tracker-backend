@@ -21,6 +21,13 @@ if env_file.exists():
     environ.Env.read_env(str(env_file))
 
 
+def env_str_with_blank_default(name: str, default: str) -> str:
+    raw = os.getenv(name)
+    if raw is None or str(raw).strip() == "":
+        return default
+    return str(raw)
+
+
 def env_int_with_blank_default(name: str, default: int) -> int:
     raw = os.getenv(name)
     if raw is None or str(raw).strip() == "":
@@ -38,9 +45,11 @@ SERVICE_NAME = env("SERVICE_NAME", default="expense-tracker-backend")
 SERVICE_VERSION = env("SERVICE_VERSION", default="1.0.0")
 ENVIRONMENT = env("ENVIRONMENT", default="develop")
 
-SECRET_KEY = env(
+SECRET_KEY = env_str_with_blank_default(
     "SECRET_KEY",
-    default=env("DJANGO_SECRET_KEY", default="django-insecure-change-me-in-production"),
+    env_str_with_blank_default(
+        "DJANGO_SECRET_KEY", "django-insecure-change-me-in-production"
+    ),
 )
 DEBUG = env("DEBUG")
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["*"])
