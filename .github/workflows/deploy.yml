@@ -107,12 +107,12 @@ jobs:
           INPUT_ENV_VARS_JSON: >-
             {
               "DJANGO_SETTINGS_MODULE": "${{ github.ref_name == 'main' && 'config.settings.prod' || github.ref_name == 'stage' && 'config.settings.stage' || 'config.settings.develop' }}",
-              "DJANGO_ALLOWED_HOSTS": "${{ github.ref_name == 'main' && vars.DJANGO_ALLOWED_HOSTS_PROD || github.ref_name == 'stage' && vars.DJANGO_ALLOWED_HOSTS_STAGE || vars.DJANGO_ALLOWED_HOSTS_DEVELOP }}",
+              "ALLOWED_HOSTS": "${{ github.ref_name == 'main' && vars.DJANGO_ALLOWED_HOSTS_PROD || github.ref_name == 'stage' && vars.DJANGO_ALLOWED_HOSTS_STAGE || vars.DJANGO_ALLOWED_HOSTS_DEVELOP }}",
               "DB_ENGINE_TYPE": "pg",
               "DB_ENGINE": "django.db.backends.postgresql_psycopg2",
               "DB_NAME": "test_db",
               "DB_USER": "postgres",
-              "DB_PASSWORD": "4753uRglf9ylGDOvBhD9",
+              "DB_PASSWORD": "${{ secrets.DB_PASSWORD }}",
               "DB_HOST": "/cloudsql/involuted-bird-416608:us-central1:platform-develop",
               "DB_PORT": "",
               "CORS_ALLOW_ALL_ORIGINS": "False",
@@ -173,12 +173,12 @@ jobs:
           INPUT_ENV_VARS_JSON: >-
             {
               "DJANGO_SETTINGS_MODULE": "${{ github.ref_name == 'main' && 'config.settings.prod' || github.ref_name == 'stage' && 'config.settings.stage' || 'config.settings.develop' }}",
-              "DJANGO_ALLOWED_HOSTS": "${{ github.ref_name == 'main' && vars.DJANGO_ALLOWED_HOSTS_PROD || github.ref_name == 'stage' && vars.DJANGO_ALLOWED_HOSTS_STAGE || vars.DJANGO_ALLOWED_HOSTS_DEVELOP }}",
+              "ALLOWED_HOSTS": "${{ github.ref_name == 'main' && vars.DJANGO_ALLOWED_HOSTS_PROD || github.ref_name == 'stage' && vars.DJANGO_ALLOWED_HOSTS_STAGE || vars.DJANGO_ALLOWED_HOSTS_DEVELOP }}",
               "DB_ENGINE_TYPE": "pg",
               "DB_ENGINE": "django.db.backends.postgresql_psycopg2",
               "DB_NAME": "test_db",
               "DB_USER": "postgres",
-              "DB_PASSWORD": "4753uRglf9ylGDOvBhD9",
+              "DB_PASSWORD": "${{ secrets.DB_PASSWORD }}",
               "DB_HOST": "/cloudsql/involuted-bird-416608:us-central1:platform-develop",
               "DB_PORT": "",
               "CORS_ALLOW_ALL_ORIGINS": "False",
