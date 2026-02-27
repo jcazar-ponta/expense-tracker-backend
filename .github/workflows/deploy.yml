@@ -118,11 +118,11 @@ jobs:
               "CORS_ALLOW_ALL_ORIGINS": "False",
               "CORS_ALLOWED_ORIGINS": "${{ github.ref_name == 'main' && vars.CORS_ALLOWED_ORIGINS_PROD || github.ref_name == 'stage' && vars.CORS_ALLOWED_ORIGINS_STAGE || vars.CORS_ALLOWED_ORIGINS_DEVELOP }}",
               "CORS_ALLOW_CREDENTIALS": "False",
-              "JWT_ALGORITHM": "${{ vars.JWT_ALGORITHM }}",
-              "JWT_ACCESS_TOKEN_LIFETIME_MINUTES": "${{ vars.JWT_ACCESS_TOKEN_LIFETIME_MINUTES }}",
-              "JWT_REFRESH_TOKEN_LIFETIME_DAYS": "${{ vars.JWT_REFRESH_TOKEN_LIFETIME_DAYS }}",
-              "JWT_ROTATE_REFRESH_TOKENS": "${{ vars.JWT_ROTATE_REFRESH_TOKENS }}",
-              "JWT_BLACKLIST_AFTER_ROTATION": "${{ vars.JWT_BLACKLIST_AFTER_ROTATION }}",
+              "JWT_ALGORITHM": "${{ vars.JWT_ALGORITHM || 'HS256' }}",
+              "JWT_ACCESS_TOKEN_LIFETIME_MINUTES": "${{ vars.JWT_ACCESS_TOKEN_LIFETIME_MINUTES || '30' }}",
+              "JWT_REFRESH_TOKEN_LIFETIME_DAYS": "${{ vars.JWT_REFRESH_TOKEN_LIFETIME_DAYS || '14' }}",
+              "JWT_ROTATE_REFRESH_TOKENS": "${{ vars.JWT_ROTATE_REFRESH_TOKENS || 'True' }}",
+              "JWT_BLACKLIST_AFTER_ROTATION": "${{ vars.JWT_BLACKLIST_AFTER_ROTATION || 'True' }}",
               "JWT_SIGNING_KEY": "${{ secrets.JWT_SIGNING_KEY }}",
               "SECRET_KEY": "${{ secrets.SECRET_KEY }}"
             }
@@ -184,11 +184,11 @@ jobs:
               "CORS_ALLOW_ALL_ORIGINS": "False",
               "CORS_ALLOWED_ORIGINS": "${{ github.ref_name == 'main' && vars.CORS_ALLOWED_ORIGINS_PROD || github.ref_name == 'stage' && vars.CORS_ALLOWED_ORIGINS_STAGE || vars.CORS_ALLOWED_ORIGINS_DEVELOP }}",
               "CORS_ALLOW_CREDENTIALS": "False",
-              "JWT_ALGORITHM": "${{ vars.JWT_ALGORITHM }}",
-              "JWT_ACCESS_TOKEN_LIFETIME_MINUTES": "${{ vars.JWT_ACCESS_TOKEN_LIFETIME_MINUTES }}",
-              "JWT_REFRESH_TOKEN_LIFETIME_DAYS": "${{ vars.JWT_REFRESH_TOKEN_LIFETIME_DAYS }}",
-              "JWT_ROTATE_REFRESH_TOKENS": "${{ vars.JWT_ROTATE_REFRESH_TOKENS }}",
-              "JWT_BLACKLIST_AFTER_ROTATION": "${{ vars.JWT_BLACKLIST_AFTER_ROTATION }}",
+              "JWT_ALGORITHM": "${{ vars.JWT_ALGORITHM || 'HS256' }}",
+              "JWT_ACCESS_TOKEN_LIFETIME_MINUTES": "${{ vars.JWT_ACCESS_TOKEN_LIFETIME_MINUTES || '30' }}",
+              "JWT_REFRESH_TOKEN_LIFETIME_DAYS": "${{ vars.JWT_REFRESH_TOKEN_LIFETIME_DAYS || '14' }}",
+              "JWT_ROTATE_REFRESH_TOKENS": "${{ vars.JWT_ROTATE_REFRESH_TOKENS || 'True' }}",
+              "JWT_BLACKLIST_AFTER_ROTATION": "${{ vars.JWT_BLACKLIST_AFTER_ROTATION || 'True' }}",
               "JWT_SIGNING_KEY": "${{ secrets.JWT_SIGNING_KEY }}",
               "SECRET_KEY": "${{ secrets.SECRET_KEY }}"
             }

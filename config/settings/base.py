@@ -20,6 +20,20 @@ env_file = BASE_DIR / ".env"
 if env_file.exists():
     environ.Env.read_env(str(env_file))
 
+
+def env_int_with_blank_default(name: str, default: int) -> int:
+    raw = os.getenv(name)
+    if raw is None or str(raw).strip() == "":
+        return default
+    return int(raw)
+
+
+def env_bool_with_blank_default(name: str, default: bool) -> bool:
+    raw = os.getenv(name)
+    if raw is None or str(raw).strip() == "":
+        return default
+    return str(raw).strip().lower() in {"1", "true", "yes", "on"}
+
 SERVICE_NAME = env("SERVICE_NAME", default="expense-tracker-backend")
 SERVICE_VERSION = env("SERVICE_VERSION", default="1.0.0")
 ENVIRONMENT = env("ENVIRONMENT", default="develop")
@@ -146,10 +160,18 @@ JWT_SIGNING_KEY = env("JWT_SIGNING_KEY", default=SECRET_KEY)
 JWT_VERIFYING_KEY = env("JWT_VERIFYING_KEY", default="")
 JWT_AUDIENCE = env("JWT_AUDIENCE", default=None)
 JWT_ISSUER = env("JWT_ISSUER", default=None)
-JWT_ACCESS_TOKEN_LIFETIME_MINUTES = env.int("JWT_ACCESS_TOKEN_LIFETIME_MINUTES", default=30)
-JWT_REFRESH_TOKEN_LIFETIME_DAYS = env.int("JWT_REFRESH_TOKEN_LIFETIME_DAYS", default=14)
-JWT_ROTATE_REFRESH_TOKENS = env.bool("JWT_ROTATE_REFRESH_TOKENS", default=True)
-JWT_BLACKLIST_AFTER_ROTATION = env.bool("JWT_BLACKLIST_AFTER_ROTATION", default=True)
+JWT_ACCESS_TOKEN_LIFETIME_MINUTES = env_int_with_blank_default(
+    "JWT_ACCESS_TOKEN_LIFETIME_MINUTES", 30
+)
+JWT_REFRESH_TOKEN_LIFETIME_DAYS = env_int_with_blank_default(
+    "JWT_REFRESH_TOKEN_LIFETIME_DAYS", 14
+)
+JWT_ROTATE_REFRESH_TOKENS = env_bool_with_blank_default(
+    "JWT_ROTATE_REFRESH_TOKENS", True
+)
+JWT_BLACKLIST_AFTER_ROTATION = env_bool_with_blank_default(
+    "JWT_BLACKLIST_AFTER_ROTATION", True
+)
 
 SIMPLE_JWT = {
     "ALGORITHM": JWT_ALGORITHM,
